@@ -1,0 +1,31 @@
+steps:
+  # 1. Build the image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/geostream-repo/producer:$COMMIT_SHA', '.']
+
+  # 2. Push to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/geostream-repo/producer:$COMMIT_SHA']
+
+  # 3. Update the Kubernetes manifest with the new image tag
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        sed -i "s|REGION|us-central1|g" k8s/deployment.yaml
+        sed -i "s|PROJECT_ID|$PROJECT_ID|g" k8s/deployment.yaml
+        sed -i "s|COMMIT_SHA|$COMMIT_SHA|g" k8s/deployment.yaml
+
+  # 4. Deploy to GKE
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args: ['apply', '-f', 'k8s/']
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=geostream-cluster'
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/geostream-repo/producer:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

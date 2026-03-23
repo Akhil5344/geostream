@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: geostream-producer
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: geostream
+  template:
+    metadata:
+      labels:
+        app: geostream
+    spec:
+      containers:
+      - name: producer
+        # Image tag is replaced by Cloud Build during CI/CD
+        image: REGION-docker.pkg.dev/PROJECT_ID/geostream-repo/producer:COMMIT_SHA
+        env:
+        - name: PROJECT_ID
+          value: "ninth-iris-485511-r4"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
