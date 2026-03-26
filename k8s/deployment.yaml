@@ -19,6 +19,7 @@ spec:
         env:
         - name: PROJECT_ID
           value: "ninth-iris-485511-r4"
+        echo "Hello"
         resources:
           requests:
             memory: "128Mi"
